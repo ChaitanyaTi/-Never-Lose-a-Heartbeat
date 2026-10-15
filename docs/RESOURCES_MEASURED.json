@@ -1,0 +1,12 @@
+{
+  "duration_measured_seconds": 10,
+  "environment": "ARM64 Raspberry Pi 4 (4 CPU cores, 2 GB RAM) / Linux 6.1",
+  "average_cpu_percent": 0.5,
+  "peak_memory_mb": 28.5,
+  "megabytes_written_to_disk_measured": 4.55,
+  "megabytes_written_to_disk_1hour": 1639.54,
+  "megabytes_sent_over_network_measured": 0.46,
+  "megabytes_sent_over_network_1hour": 165.92,
+  "samples_per_second": 800,
+  "total_samples_per_hour": 2880000
+}
