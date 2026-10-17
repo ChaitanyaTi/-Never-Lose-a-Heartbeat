@@ -244,27 +244,43 @@ Upon power restoration, SQLite WAL auto-recovery completes in $< 50\text{ ms}$, 
 All signal processing algorithms match exact mathematical requirements identically in both Edge (Python) and Cloud (FastAPI):
 
 ### 1. 1-Second Windowing
+
 Each window $w \in \mathbb{N}_0$ covers sample indices:
-$$\text{Window } w = \Big[ 400w,\; 400w + 399 \Big]$$
+
+$$
+\text{Window } w = [400w, 400w + 399]
+$$
+
 - Window $0$: samples $0$ to $399$
 - Window $1$: samples $400$ to $799$
 - Window $w$: samples $400w$ to $400w + 399$
 
 ### 2. Missing Counts & Completeness
-- $\text{missing\_1} = 400 - |\text{available samples for Sensor 1 in window } w|$
-- $\text{missing\_2} = 400 - |\text{available samples for Sensor 2 in window } w|$
-- $\text{complete} = (\text{missing\_1} == 0 \land \text{missing\_2} == 0)$
+
+- $\text{missing}_1 = 400 - |\text{available samples for Sensor 1 in window } w|$
+- $\text{missing}_2 = 400 - |\text{available samples for Sensor 2 in window } w|$
+- $\text{complete} = (\text{missing}_1 = 0 \land \text{missing}_2 = 0)$
 
 ### 3. Per-Channel Statistics
+
 For each channel $c \in \{1, 2, 3\}$ of Sensor 1 and $c \in \{1, 2\}$ of Sensor 2, metrics are computed across available samples and rounded to 1 decimal place:
-$$\text{mean}_c = \text{round}\left(\frac{1}{N} \sum_{i} x_{i, c},\; 1\right), \quad \min_c = \min_{i} x_{i, c}, \quad \max_c = \max_{i} x_{i, c}$$
+
+$$
+\text{mean}_c = \text{round}\left(\frac{1}{N} \sum_{i} x_{i, c}, 1\right), \quad \min_c = \min_{i} x_{i, c}, \quad \max_c = \max_{i} x_{i, c}
+$$
+
 If no samples are available for a sensor, all statistical outputs evaluate to `null`.
 
 ### 4. Sensor 2 Euclidean Magnitude
+
 For Sensor 2 (2 channels: ch1 and ch2), magnitude computes the mean Euclidean norm across all available samples:
-$$\text{magnitude} = \text{round}\left( \frac{1}{N_2} \sum_{i \in \text{avail}_2} \sqrt{x_{i, 1}^2 + x_{i, 2}^2},\; 1 \right)$$
+
+$$
+\text{magnitude} = \text{round}\left( \frac{1}{N_2} \sum_{i \in \text{avail}_2} \sqrt{x_{i, 1}^2 + x_{i, 2}^2}, 1 \right)
+$$
 
 ### 5. 4-Condition Peak Detection & Heart Rate Derivation
+
 Evaluated on **Sensor 1, Channel 2**:
 
 ```
@@ -276,14 +292,20 @@ Sample xi is a validated R-Peak IF AND ONLY IF all 4 conditions hold:
 ```
 
 **Heart Rate Calculation Rules**:
-- Evaluated over the **5-second window**: $[400(w - 4),\; 400(w + 1) - 1]$ (2,000 samples).
+- Evaluated over the **5-second window**: $[400(w - 4), 400(w + 1) - 1]$ (2,000 samples).
 - **Strict Null Enforcement**: Heart rate is strictly `null` if:
   1. $w < 4$ (fewer than 5 complete seconds observed).
   2. Any of the 2,000 samples in the 5-second lookback interval is missing.
   3. Fewer than 2 peaks are detected within the 5-second interval ($k < 2$).
 - When valid, the mean peak-to-peak interval in seconds is:
-  $$\Delta t_{\text{peak}} = \frac{p_k - p_1}{400 \times (k - 1)}$$
-  $$\text{Heart Rate (BPM)} = \text{round}\left( \frac{60}{\Delta t_{\text{peak}}},\; 1 \right)$$
+
+  $$
+  \Delta t_{\text{peak}} = \frac{p_k - p_1}{400 \times (k - 1)}
+  $$
+
+  $$
+  \text{Heart Rate (BPM)} = \text{round}\left( \frac{60}{\Delta t_{\text{peak}}}, 1 \right)
+  $$
 
 ---
 
